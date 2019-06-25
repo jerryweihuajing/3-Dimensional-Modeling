@@ -11,6 +11,16 @@ Created on Fri Jun 21 22:20:34 2019
 
 import matplotlib.pyplot as plt
 import numpy as np
+import copy as cp
+
+import sys,os
+
+if os.getcwd() not in sys.path:
+    
+    sys.path.append(os.getcwd())
+    
+from Module import Dictionary as Dict
+from Module import Initialize as Init
 
 #============================================================================== 
 #坐标轴和边框
@@ -30,23 +40,22 @@ def TicksAndSpines(ax,ticks=False,spines=False):
         ax.spines['left'].set_visible(False) 
         ax.spines['right'].set_visible(False)
 
-#============================================================================== 
-def RGB2Gray(which_img_rgb):
-    
-    #r,g,b 3 tunnel
-    R=which_img_rgb[:,:,0]
-    G=which_img_rgb[:,:,1]
-    B=which_img_rgb[:,:,2]
-    
-    return 0.3*R+0.59*G+0.11*B
-
-load_path=r'C:\魏华敬\Spyder\3D model\Data\profile_model_1.bmp'
-
-img_rgb=plt.imread(load_path)
-
-plt.imshow(img_rgb)
+load_path=r'C:\魏华敬\Spyder\3D model\Data\1.bmp'
 
 '''
 demand:
 target abstraction in seismic image
 '''
+
+#导入图片，生成rgb矩阵
+img_rgb=Init.LoadImage(load_path,show=True)
+
+#生rgb相关的列表和字典
+#rgb_dict=Init.InitDict(img_rgb)
+rgb_dict=Init.InitDict(img_rgb,base_adjust=True,fault_exist=True)
+
+#改变图片尺寸增加padding
+img_tag,img_rgb=Init.AddPadding(img_rgb,rgb_dict,show=True)
+
+#初始化fractions，并显示
+#total_fractions=Pick.PickFractions(img_rgb,img_tag,rgb_dict)  
