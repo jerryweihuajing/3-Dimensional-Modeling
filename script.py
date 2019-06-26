@@ -17,45 +17,78 @@ import sys,os
 
 if os.getcwd() not in sys.path:
     
-    sys.path.append(os.getcwd())
-    
+    sys.path.append(os.getcwd())  
+
+from Object.o_discrete_point import discrete_point
+
+from Module import Image as Im
+from Module import Depth as Dep
+from Module import Display as Dis
 from Module import Dictionary as Dict
 from Module import Initialize as Init
-
-#============================================================================== 
-#坐标轴和边框
-def TicksAndSpines(ax,ticks=False,spines=False):
-    
-    #去掉坐标轴
-    if not ticks:
-
-        ax.set_xticks([])
-        ax.set_yticks([])
-        
-     #去掉上下左右边框
-    if not spines:
-
-        ax.spines['top'].set_visible(False) 
-        ax.spines['bottom'].set_visible(False) 
-        ax.spines['left'].set_visible(False) 
-        ax.spines['right'].set_visible(False)
+from Module import TargetExtraction as TE
 
 load_path=r'C:\魏华敬\Spyder\3D model\Data\1.bmp'
+
+images_paths=[r'C:\魏华敬\Spyder\3D model\Data\1.bmp',
+              r'C:\魏华敬\Spyder\3D model\Data\2.bmp',
+              r'C:\魏华敬\Spyder\3D model\Data\3.bmp']
 
 '''
 demand:
 target abstraction in seismic image
 '''
 
-#导入图片，生成rgb矩阵
-img_rgb=Init.LoadImage(load_path,show=True)
+def FractionSurface(load_path):
+        
+    #导入图片，生成rgb矩阵
+    img_rgb=Init.LoadImage(load_path,show=True)
+    
+    #生rgb相关的列表和字典
+    #rgb_dict=Init.InitDict(img_rgb)
+    rgb_dict=Init.InitDict(img_rgb,base_adjust=True,fault_exist=True)
+    
+    #生成tag矩阵
+    img_tag=Im.RGB2Tag(img_rgb,rgb_dict)
+    
+    #初始化fractions，并显示
+    total_fractions=Init.InitFractions(img_rgb,img_tag,rgb_dict)
+     
+    total_layers=Init.InitLayers(total_fractions)
+    total_faults=Init.InitFaults(total_fractions)
+    
+    return Dep.FractionDepth(total_layers[0],'top')
 
-#生rgb相关的列表和字典
-#rgb_dict=Init.InitDict(img_rgb)
-rgb_dict=Init.InitDict(img_rgb,base_adjust=True,fault_exist=True)
+#    plt.figure()
+#    Dis.ShowContent(top_depth,img_tag) 
 
-#改变图片尺寸增加padding
-img_tag,img_rgb=Init.AddPadding(img_rgb,rgb_dict,show=True)
+discrete_points=[]
 
-#初始化fractions，并显示
-#total_fractions=Pick.PickFractions(img_rgb,img_tag,rgb_dict)  
+pos_x=0
+
+'''Display ERROR'''
+for this_load_path in images_paths[:1]:
+    
+    #different profile
+    pos_x+=10
+    
+    #surface of this fraction
+    pos_surface=FractionSurface(this_load_path)
+    
+    for pos_z,pos_y in pos_surface:
+        
+        print(pos_z,pos_y)
+        
+        #new discrete_point object
+        new_discrete_point=discrete_point()
+        
+        new_discrete_point.pos_x=pos_x
+        new_discrete_point.pos_y=pos_y
+        new_discrete_point.pos_z=pos_z
+        
+        discrete_points.append(new_discrete_point)
+        
+        
+#interpolation
+    
+    

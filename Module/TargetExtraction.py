@@ -12,9 +12,11 @@ Created on Tue Jun 25 23:08:47 2019
 import copy as cp
 import numpy as np
 
-#跨文件夹导入包
-import sys
-sys.path.append('.')
+import sys,os
+
+if os.getcwd() not in sys.path:
+    
+    sys.path.append(os.getcwd())
 
 from Object.o_pixel import pixel
 from Object.o_layer import layer
@@ -23,22 +25,10 @@ from Object.o_fault import fault
 import Module.Dictionary as Dict  
 import Module.Display as Dis
 
-"""
-填充方法：
-1 填充边界内的点，向内侵蚀
-2 阿华算法：IJ交织（已改进，解决了拾取本不该属于集合里的点的问题）
-"""
-"""算的太慢!!!,只能缩小尺寸"""  
+"""x y scanning"""  
 #==============================================================================  
 #提取出tag值的像素点坐标的集合
-def PickFractions(img_rgb,
-                  img_tag,
-                  this_tag,
-                  rgb_dict,
-                  show=False,
-                  axis=True,
-                  text=False,
-                  output=False):
+def PickSomething(img_rgb,img_tag,this_tag,rgb_dict,show=False):
     
     #content_sum=Content[0]+Content[1]+...
     content_sum=[]   
@@ -57,8 +47,7 @@ def PickFractions(img_rgb,
     
     #that_fractions是生成的fraction对象的集合
     that_fractions=[]      
-
-    """ 阿华法增加像素点"""    
+   
     #以下部分进行循环
     while content_flag:  
         
@@ -542,7 +531,7 @@ def PickFractions(img_rgb,
     #显示一下Content的位置
     if show:
         
-        Dis.ShowFractions(that_fractions,img_rgb,rgb_dict,axis,text,output)
+        Dis.ShowFractions(that_fractions,img_rgb,rgb_dict)
               
     return that_fractions
 
@@ -595,6 +584,7 @@ def Find1stPixel(tag,img_tag,content):
 #第一个满足tag的pixel对象
 def Find1stNeighbor(tag,flag_stop,edge,img_tag,index):
     
+    '''in order'''
     #[i,j-1],[i+1,j-1],[i+1,j],[i+1,j+1],[i,j+1],[i-1,j+1],[i-1,j],[i-1,j-1]
     #邻域的索引和横纵坐标的索引（绝对索引）
     neighbordict={0:(0,-1),
@@ -626,7 +616,7 @@ def Find1stNeighbor(tag,flag_stop,edge,img_tag,index):
     new_neighbordict=Dict.DictSortFromStart(neighbordict,new_index)
     
     #生成邻居列表,起始迭代邻居的索引
-    first_pixel.GenerateNeighbor(img_tag)
+    first_pixel.InitNeighbor(img_tag)
     
     #邻域内邻居数量
     count=0
@@ -637,7 +627,7 @@ def Find1stNeighbor(tag,flag_stop,edge,img_tag,index):
         index=list(new_neighbordict.keys())[i]
         
         #符合tag的点计数
-        if first_pixel.neighbor[index]==tag:
+        if first_pixel.neighbor_value[index]==tag:
             
             count+=1
             

@@ -19,8 +19,11 @@ if os.getcwd() not in sys.path:
     
     sys.path.append(os.getcwd())
     
-from Module import Image as Im
+from Object.o_fault import fault
+from Object.o_layer import layer   
+  
 from Module import Dictionary as Dict
+from Module import TargetExtraction as TE
 
 #============================================================================== 
 #输入路径path，读取图片，生成图片的rgb和灰度矩阵函数
@@ -43,86 +46,6 @@ def LoadImage(load_path,
             plt.axis('off')
         
     return img_rgb
-
-#============================================================================== 
-#增加画布，改变输入图像的尺寸：增加m行n列
-def AddPadding(img_rgb,
-               rgb_dict,
-               show=False,
-               axis=False,
-               fault_exist=False):
-    
-    #新的img_rgb
-    temp_img_rgb=cp.deepcopy(img_rgb)
-    
-    #默认为长宽的20%
-    m_row,n_column=int(np.shape(img_rgb)[0]/3),int(np.shape(img_rgb)[1]/3)
-    
-#    print(m_row,n_column)
-    
-    #改变图像的尺寸
-    new_img_rgb_shape=(np.shape(temp_img_rgb)[0]+m_row,
-                       np.shape(temp_img_rgb)[1]+n_column,
-                       np.shape(temp_img_rgb)[2])
-    
-    #这种定义背景方式最奏效
-    #背景色
-    background_rgb=np.array([255,255,255],dtype=np.uint8)
-    
-    #new_img_rgb视为底图
-    new_img_rgb=np.full(new_img_rgb_shape,background_rgb)  
-    
-    mm,nn=int(np.floor(m_row/2)),int(np.floor(n_column/2))
-    
-    #着色
-    new_img_rgb[mm:mm+np.shape(img_rgb)[0],nn:nn+np.shape(img_rgb)[1]]=img_rgb[:,:]
-    
-    #生成img_tag矩阵
-    img_tag=Im.RGB2Tag(new_img_rgb,rgb_dict)
-    
-    #把边界边视为fault
-    #一列一列地遍历
-    if fault_exist:
-           
-        #左侧
-        for j in range(np.shape(img_tag)[1]):
-            
-            if list(img_tag[:,j])!=[0]*np.shape(img_tag)[0]:
-                
-                #厚度为3
-                img_tag[mm:-mm,j-1]=-1
-                img_tag[mm:-mm,j-2]=-1
-                img_tag[mm:-mm,j-3]=-1
-      
-                break
-            
-        #右侧
-        for j in range(np.shape(img_tag)[1]):
-            
-            if list(img_tag[:,-j])!=[0]*np.shape(img_tag)[0]:
-                
-                #厚度为3
-                img_tag[mm:-mm,1-j]=-1
-                img_tag[mm:-mm,2-j]=-1
-                img_tag[mm:-mm,3-j]=-1
-                
-                break 
- 
-    #显示rgb图像
-    if show: 
-        
-        plt.figure()
-        plt.imshow(Im.Tag2RGB(img_tag,rgb_dict)) 
-        
-        #显示坐标轴吗
-        if not axis:
-            
-            plt.axis('off')
-            
-        plt.axis('scaled')
-        
-    #输出新的img_tag
-    return img_tag,Im.Tag2RGB(img_tag,rgb_dict)
 
 #============================================================================== 
 #生成字典的初始化函数
@@ -271,3 +194,65 @@ def InitDict(img_rgb,
 #    print(rgb_dict)
     
     return rgb_dict
+
+#============================================================================== 
+#初始化所有的fractions
+def InitFractions(img_rgb,img_tag,rgb_dict,base='off'):
+    
+    #基底tag
+    base_tag=-2
+    
+    #拾取出tag不为0的层
+    fraction_rgb_dict=cp.deepcopy(rgb_dict)
+    
+    #删除空白rgb索引
+    del fraction_rgb_dict[0]
+    
+    #是否要基底的那个tag
+    if base=='off':
+
+        if base_tag in list(fraction_rgb_dict.keys()):
+            
+            del fraction_rgb_dict[base_tag]
+    
+    #图像中的所有fraction对象列表
+    total_fractions=[]
+    
+    #拾取断层和地层并显示
+    for this_tag in list(fraction_rgb_dict.keys()):
+     
+        that_fraction=TE.PickSomething(img_rgb,img_tag,this_tag,fraction_rgb_dict)
+        
+        total_fractions+=that_fraction
+    
+    return total_fractions
+
+#==============================================================================  
+#Delete faults
+def InitLayers(total_fractions):
+    
+    #result list
+    total_layers=[]
+    
+    for this_fraction in total_fractions:
+        
+        if isinstance(this_fraction,layer):
+            
+            total_layers.append(this_fraction)
+            
+    return total_layers
+
+#==============================================================================  
+#Delete layers
+def InitFaults(total_fractions):
+    
+    #result list
+    total_faults=[]
+    
+    for this_fraction in total_fractions:
+        
+        if isinstance(this_fraction,fault):
+            
+            total_faults.append(this_fraction)
+            
+    return total_faults

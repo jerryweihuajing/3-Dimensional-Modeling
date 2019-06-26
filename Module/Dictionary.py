@@ -9,6 +9,8 @@ Created on Tue Jun 25 21:48:57 2019
 @title：Module-Dictionary
 """
 
+import copy as cp
+
 #============================================================================== 
 #字典按value搜索key
 def DictKeyOfValue(dictionary,value):
@@ -39,6 +41,21 @@ def SortFromStart(which_list,start_index):
     return new_list,map_new_old_index 
 
 #============================================================================== 
+#获取字典子集的函数，从索引start到索引stop,不包括索引stop
+def DictSlice(dictionary,start,stop):
+    
+    keys=list(dictionary.keys())
+    values=list(dictionary.values())  
+    
+    new_dict={}
+    
+    for i in range(start,stop):
+        
+        new_dict[keys[i]]=values[i]
+        
+    return new_dict
+
+#============================================================================== 
 #让字典索引以某列表的顺序排列
 def DictSortByIndex(which_dict,which_keys):
     
@@ -51,3 +68,42 @@ def DictSortByIndex(which_dict,which_keys):
         that_dict[this_key]=which_dict[this_key]
         
     return that_dict
+
+#============================================================================== 
+#以start为起始索引，将字典重新排序
+def DictSortFromStart(dictionary,start):
+    
+    #两个字典切片
+    new_dict_1=DictSlice(dictionary,start,len(dictionary))
+    new_dict_2=DictSlice(dictionary,0,start)
+    
+    #建立新的索引列表
+    keys=[]
+    
+    for item in list(new_dict_1.items()):
+        
+        keys.append(item[0])
+        
+    for item in list(new_dict_2.items()):
+        
+        keys.append(item[0])
+        
+    #建立新的值列表 
+    values=[]
+    
+    for item in list(new_dict_1.items()):
+        
+        values.append(item[1])
+        
+    for item in list(new_dict_2.items()):
+        
+        values.append(item[1])
+        
+    #建立新的字典
+    new_dict={}
+    
+    for k in range(len(dictionary)):
+        
+        new_dict[keys[k]]=values[k]
+        
+    return new_dict
