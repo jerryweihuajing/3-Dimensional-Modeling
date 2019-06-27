@@ -26,13 +26,14 @@ from Module import Depth as Dep
 from Module import Display as Dis
 from Module import Dictionary as Dict
 from Module import Initialize as Init
+from Module import Interpolation as Int
 from Module import TargetExtraction as TE
 
 load_path=r'C:\魏华敬\Spyder\3D model\Data\1.bmp'
 
-images_paths=[r'C:\魏华敬\Spyder\3D model\Data\1.bmp',
-              r'C:\魏华敬\Spyder\3D model\Data\2.bmp',
-              r'C:\魏华敬\Spyder\3D model\Data\3.bmp']
+images_paths=[r'C:\魏华敬\Spyder\3D model\Data\flat_1.bmp',
+              r'C:\魏华敬\Spyder\3D model\Data\flat_2.bmp',
+              r'C:\魏华敬\Spyder\3D model\Data\flat_3.bmp']
 
 '''
 demand:
@@ -46,7 +47,9 @@ def FractionSurface(load_path):
     
     #生rgb相关的列表和字典
     #rgb_dict=Init.InitDict(img_rgb)
-    rgb_dict=Init.InitDict(img_rgb,base_adjust=True,fault_exist=True)
+    rgb_dict=Init.InitDict(img_rgb,base_adjust=True)
+    
+#    print(rgb_dict)
     
     #生成tag矩阵
     img_tag=Im.RGB2Tag(img_rgb,rgb_dict)
@@ -57,28 +60,34 @@ def FractionSurface(load_path):
     total_layers=Init.InitLayers(total_fractions)
     total_faults=Init.InitFaults(total_fractions)
     
-    return Dep.FractionDepth(total_layers[0],'top')
+#    #all surfaces in this image
+#    surfaces=[]
+#    
+#    for this_layer in total_layers:
+#        
+#        surfaces.append(Dep.FractionDepth(this_layer,'top'))
+#
+#    return surfaces
 
-#    plt.figure()
-#    Dis.ShowContent(top_depth,img_tag) 
+    return Dep.FractionDepth(total_fractions[0],'top')
 
 discrete_points=[]
 
 pos_x=0
 
 '''Display ERROR'''
-for this_load_path in images_paths[:1]:
-    
+for this_load_path in images_paths:
+
     #different profile
-    pos_x+=10
+    pos_x+=5
     
     #surface of this fraction
     pos_surface=FractionSurface(this_load_path)
     
+#    print(len(pos_surface))
+    
     for pos_z,pos_y in pos_surface:
-        
-        print(pos_z,pos_y)
-        
+             
         #new discrete_point object
         new_discrete_point=discrete_point()
         
@@ -86,9 +95,39 @@ for this_load_path in images_paths[:1]:
         new_discrete_point.pos_y=pos_y
         new_discrete_point.pos_z=pos_z
         
-        discrete_points.append(new_discrete_point)
-        
-        
+        discrete_points.append(new_discrete_point)    
+    
+    pixel_step=1
+    
 #interpolation
+this_img=Int.GlobalIDWInterpolation(discrete_points,pixel_step)   
+
+plt.figure()
+
+plt.imshow(this_img,cmap='terrain')
+#%%
+#3D coordinates
+X,Y,Z=[],[],[]
+
+for i in range(np.shape(this_img)[0]):
     
-    
+    for j in range(np.shape(this_img)[1]):
+        
+        X.append(j)
+        Y.append(i)
+        Z.append(this_img[i,j])
+          
+from mpl_toolkits.mplot3d import Axes3D
+
+fig = plt.figure()
+
+ax = fig.add_subplot(111, projection='3d')
+
+ax.plot_trisurf(X, Y, Z)
+plt.show()
+
+plt.axis('equal')
+
+#axis boundary
+plt.xlim(min(X),max(X))
+plt.ylim(min(Y),max(Y))
