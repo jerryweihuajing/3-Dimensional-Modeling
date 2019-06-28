@@ -8,7 +8,7 @@ Created on Fri Jun 21 22:20:34 2019
 
 @title：seismic profile model construction-execution script
 """
-
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 import copy as cp
@@ -149,4 +149,4 @@ ax.set_zticks([])
 
 #plt.axis('equal')
 
-plt.zlim(min(Z),max(Z))
+#plt.zlim(min(Z),max(Z))
