@@ -29,7 +29,7 @@ from Module import TargetExtraction as TE
 #输入路径path，读取图片，生成图片的rgb和灰度矩阵函数
 #参数show表示图片预览参数：默认为None，rgb表示开启rgb预览，gray表示灰度预览
 def LoadImage(load_path,
-              show=True,
+              show=False,
               axis=True):
     
     img_rgb=plt.imread(load_path) 

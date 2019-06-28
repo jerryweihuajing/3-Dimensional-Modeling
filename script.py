@@ -29,21 +29,21 @@ from Module import Initialize as Init
 from Module import Interpolation as Int
 from Module import TargetExtraction as TE
 
-load_path=r'C:\魏华敬\Spyder\3D model\Data\1.bmp'
+load_path='./Data/1.bmp'
 
-images_paths=[r'C:\魏华敬\Spyder\3D model\Data\flat_1.bmp',
-              r'C:\魏华敬\Spyder\3D model\Data\flat_2.bmp',
-              r'C:\魏华敬\Spyder\3D model\Data\flat_3.bmp']
+images_paths=['./Data/flat_1.bmp',
+              './Data/flat_2.bmp',
+              './Data/flat_3.bmp']
 
 '''
 demand:
 target abstraction in seismic image
 '''
 
-def FractionSurface(load_path):
+def FractionSurface(load_path,k):
         
     #导入图片，生成rgb矩阵
-    img_rgb=Init.LoadImage(load_path,show=True)
+    img_rgb=Init.LoadImage(load_path)
     
     #生rgb相关的列表和字典
     #rgb_dict=Init.InitDict(img_rgb)
@@ -69,65 +69,84 @@ def FractionSurface(load_path):
 #
 #    return surfaces
 
-    return Dep.FractionDepth(total_fractions[0],'top')
+    return Dep.FractionDepth(total_fractions[k],'top')+Dep.FractionDepth(total_fractions[k],'bottom')
 
-discrete_points=[]
+#list of discrete points
+images=[]
 
-pos_x=0
-
-'''Display ERROR'''
-for this_load_path in images_paths:
-
-    #different profile
-    pos_x+=5
+for k in range(2):
     
-    #surface of this fraction
-    pos_surface=FractionSurface(this_load_path)
+    discrete_points=[]
     
-#    print(len(pos_surface))
+    pos_x=0
     
-    for pos_z,pos_y in pos_surface:
-             
-        #new discrete_point object
-        new_discrete_point=discrete_point()
+    '''Display ERROR'''
+    for this_load_path in images_paths:
+    
+        #different profile
+        pos_x+=5
         
-        new_discrete_point.pos_x=pos_x
-        new_discrete_point.pos_y=pos_y
-        new_discrete_point.pos_z=pos_z
+        #surface of this fraction
+        pos_surface=FractionSurface(this_load_path,k)
         
-        discrete_points.append(new_discrete_point)    
-    
-    pixel_step=1
-    
-#interpolation
-this_img=Int.GlobalIDWInterpolation(discrete_points,pixel_step)   
-
-plt.figure()
-
-plt.imshow(this_img,cmap='terrain')
-#%%
-#3D coordinates
-X,Y,Z=[],[],[]
-
-for i in range(np.shape(this_img)[0]):
-    
-    for j in range(np.shape(this_img)[1]):
+    #    print(len(pos_surface))
         
-        X.append(j)
-        Y.append(i)
-        Z.append(this_img[i,j])
-          
-from mpl_toolkits.mplot3d import Axes3D
-
-fig = plt.figure()
-
+        for pos_z,pos_y in pos_surface:
+                 
+            #new discrete_point object
+            new_discrete_point=discrete_point()
+            
+            new_discrete_point.pos_x=pos_x
+            new_discrete_point.pos_y=pos_y
+            new_discrete_point.pos_z=pos_z
+            
+            discrete_points.append(new_discrete_point)    
+        
+        pixel_step=1
+        
+    #interpolation
+    this_img=Int.GlobalIDWInterpolation(discrete_points,pixel_step)   
+    
+    plt.figure()
+    
+    plt.imshow(this_img,cmap='terrain')
+    
+    #collect all the image
+    images.append(this_img)
+    
+fig = plt.figure()   
 ax = fig.add_subplot(111, projection='3d')
 
-ax.plot_trisurf(X, Y, Z)
-plt.show()
+colors=['red','blue']
+count=0
 
-plt.axis('equal')
+for this_img in images:
+    
+    #3D coordinates
+    X,Y,Z=[],[],[]
+    
+    for i in range(np.shape(this_img)[0]):
+        
+        for j in range(np.shape(this_img)[1]):
+            
+            X.append(j)
+            Y.append(i)
+            Z.append(this_img[i,j])
+    
+    ax.plot_trisurf(X, Y, Z,color=colors[count])
+    plt.show()
+    
+    count+=1
+    
+ax.spines['top'].set_visible(False) 
+ax.spines['bottom'].set_visible(False) 
+ax.spines['left'].set_visible(False) 
+ax.spines['right'].set_visible(False)
+        
+ax.set_xticks([])
+ax.set_yticks([])
+ax.set_zticks([])
 
-#axis boundary
-plt.xlim(min(X),max(X))
-plt.ylim(min(Y),max(Y))
+#plt.axis('equal')
+
+plt.zlim(min(Z),max(Z))
