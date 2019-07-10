@@ -62,10 +62,10 @@ def quad_sim(x_c, y_c, z_c):
     t = 0
 
     q = Quadrotor(x=x_pos, y=y_pos, z=z_pos, roll=roll,
-                  pitch=pitch, yaw=yaw, size=1, show_animation=show_animation)
+                  pitch=pitch, yaw=yaw, size=2, show_animation=show_animation)
 
     i = 0
-    n_run = 8
+    n_run = 4
     irun = 0
 
     while True:
@@ -231,8 +231,6 @@ def main():
         z_coeffs[i] = traj.z_c
 
     quad_sim(x_coeffs, y_coeffs, z_coeffs)
-
-    import matplotlib.pyplot as plt
     
 if __name__ == "__main__":
     main()

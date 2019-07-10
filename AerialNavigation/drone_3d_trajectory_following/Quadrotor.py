@@ -10,7 +10,15 @@ import matplotlib.pyplot as plt
 
 
 class Quadrotor():
-    def __init__(self, x=0, y=0, z=0, roll=0, pitch=0, yaw=0, size=0.25, show_animation=True):
+    def __init__(self,
+                 x=0, 
+                 y=0, 
+                 z=0, 
+                 roll=0, 
+                 pitch=0, 
+                 yaw=0, 
+                 size=0.25, 
+                 show_animation=True):
         self.p1 = np.array([size / 2, 0, 0, 1]).T
         self.p2 = np.array([-size / 2, 0, 0, 1]).T
         self.p3 = np.array([0, size / 2, 0, 1]).T
@@ -56,7 +64,8 @@ class Quadrotor():
              [-sin(pitch), cos(pitch) * sin(roll), cos(pitch) * cos(yaw), z]
              ])
 
-    def plot(self):  # pragma: no cover
+    # pragma: no cover
+    def plot(self):  
         T = self.transformation_matrix()
 
         p1_t = np.matmul(T, self.p1)
@@ -68,18 +77,19 @@ class Quadrotor():
 
         self.ax.plot([p1_t[0], p2_t[0], p3_t[0], p4_t[0]],
                      [p1_t[1], p2_t[1], p3_t[1], p4_t[1]],
-                     [p1_t[2], p2_t[2], p3_t[2], p4_t[2]], 'k.')
+                     [p1_t[2], p2_t[2], p3_t[2], p4_t[2]], 'k.',markersize=13)
 
         self.ax.plot([p1_t[0], p2_t[0]], [p1_t[1], p2_t[1]],
                      [p1_t[2], p2_t[2]], 'r-')
         self.ax.plot([p3_t[0], p4_t[0]], [p3_t[1], p4_t[1]],
                      [p3_t[2], p4_t[2]], 'r-')
 
-        self.ax.plot(self.x_data, self.y_data, self.z_data, 'b:')
+        #track
+        self.ax.plot(self.x_data, self.y_data, self.z_data, 'b-')
 
         plt.xlim(-5, 5)
         plt.ylim(-5, 5)
-        self.ax.set_zlim(0, 10)
+        self.ax.set_zlim(0, 8)
 
         plt.pause(0.001)
         
