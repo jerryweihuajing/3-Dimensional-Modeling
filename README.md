@@ -1,1 +1,1 @@
-# 3D-model
+# 3DModel
